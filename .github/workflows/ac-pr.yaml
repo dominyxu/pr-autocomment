@@ -8,17 +8,40 @@ jobs:
   add-comment:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Make a PR comment
+        run: |
+          PR_NUMBER=$(jq -r '.number' < "$GITHUB_EVENT_PATH")
+          COMMENT_BODY='{"body":"Please update doxygen documentation if required."}'
+          curl -s -H "Authorization: token ${{ secrets.PAT }}" \
+               -H "Content-Type: application/json" \
+               -d "$COMMENT_BODY" \
+               "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments"
+
+
+
+#--------
+
+# name: PR Commenter
+
+# on:
+#   pull_request:
+#     types: [opened]
+
+# jobs:
+#   add-comment:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
       
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          token: ${{ secrets.PAT }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: "Please update doxygen documentation if required."
+#       - name: Create or update comment
+#         uses: peter-evans/create-or-update-comment@v2
+#         with:
+#           token: ${{ secrets.PAT }}
+#           issue-number: ${{ github.event.pull_request.number }}
+#           body: "Please update doxygen documentation if required."
 
-
+#---------------
 
 # name: PR Commenter
 
