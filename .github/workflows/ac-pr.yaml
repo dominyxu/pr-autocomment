@@ -9,9 +9,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add comment to PR
-        uses: peter-evans/create-or-update-comment@v1
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Please update doxygen documentation if required.
+          script: |
+            const issue_number = context.payload.pull_request.number;
+            const comment = "Please update doxygen documentation if required.";
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number,
+              body: comment
+            });
+# name: PR Commenter
+
+# on:
+#   pull_request:
+#     types: [opened]
+
+# jobs:
+#   add-comment:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Add comment to PR
+#         uses: peter-evans/create-or-update-comment@v1
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
+#           issue-number: ${{ github.event.pull_request.number }}
+#           body: |
+#             Please update doxygen documentation if required.
