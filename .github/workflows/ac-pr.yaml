@@ -11,7 +11,7 @@ jobs:
       - name: Make a PR comment
         run: |
           PR_NUMBER=$(jq -r '.number' < "$GITHUB_EVENT_PATH")
-          COMMENT_BODY='{"body":"Please update doxygen documentation if required."}'
+          COMMENT_BODY='{"body":"Please update doxygen documentation (if required)."}'
           curl -s -H "Authorization: token ${{ secrets.PAT }}" \
                -H "Content-Type: application/json" \
                -d "$COMMENT_BODY" \
