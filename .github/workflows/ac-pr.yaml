@@ -8,19 +8,44 @@ jobs:
   add-comment:
     runs-on: ubuntu-latest
     steps:
-      - name: Add comment to PR
-        uses: actions/github-script@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v2
         with:
-          script: |
-            const issue_number = context.payload.pull_request.number;
-            const comment = "Please update doxygen documentation if required.";
-            github.rest.issues.createComment({
-              ...context.repo,
-              issue_number,
-              body: comment
-            });
+          token: ${{ secrets.PAT }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: "Please update doxygen documentation if required."
+
+
+
+# name: PR Commenter
+
+# on:
+#   pull_request:
+#     types: [opened]
+
+# jobs:
+#   add-comment:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Add comment to PR
+#         uses: actions/github-script@v6
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.PAT }}
+#         with:
+#           script: |
+#             const issue_number = context.payload.pull_request.number;
+#             const comment = "Please update doxygen documentation if required.";
+#             github.rest.issues.createComment({
+#               ...context.repo,
+#               issue_number,
+#               body: comment
+#             });
+
+
+#---------------------------------------
 # name: PR Commenter
 
 # on:
