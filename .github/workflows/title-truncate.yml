@@ -1,59 +1,32 @@
-name: Fix Truncated PR Title
+name: Update PR Title with Full Commit Message
 
 on:
   pull_request:
-    types: [opened, edited, synchronize]
+    types: [opened]
 
 jobs:
-  fix-pr-title:
+  update-pr-title:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for truncated PR title and update if needed
-        uses: actions/github-script@v7
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get full commit message
+        id: commit
+        run: |
+          MESSAGE=$(git log -1 --pretty=%B)
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$MESSAGE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Update PR title
+        uses: actions/github-script@v6
         with:
           script: |
-            const pr = context.payload.pull_request;
-            const prTitle = pr.title;
-            const prNumber = pr.number;
-            const prBody = pr.body || "";
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-
-            // Get the single commit for this PR
-            const commits = await github.rest.pulls.listCommits({
-              owner,
-              repo,
-              pull_number: prNumber,
-              per_page: 2
+            const fullMessage = `${{ steps.commit.outputs.message }}`.trim();
+            github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              title: fullMessage
             });
-
-            if (commits.data.length !== 1) {
-              // Only act if exactly one commit
-              return;
-            }
-
-            const commitMsg = commits.data[0].commit.message;
-            const commitMsgFirstLine = commitMsg.split('\n')[0];
-            const commitMsgFirst70 = commitMsgFirstLine.slice(0, 70);
-
-            // Detect if PR title is truncated version of commit message
-            // 1. PR title matches first 70 chars of commit message
-            // 2. PR title ends with "..."
-            // 3. Commit message is longer than 70 chars
-            // 4. PR title is not already the full commit message
-            if (
-              commitMsgFirstLine.length > 70 &&
-              prTitle.trim().endsWith("...")
-            ) {
-              // Avoid endless loop: only update if PR title is not already the full commit message
-              await github.rest.pulls.update({
-                owner,
-                repo,
-                pull_number: prNumber,
-                title: commitMsgFirstLine.trim()
-              });
-              console.log(`PR title updated to full commit message: "${commitMsgFirstLine.trim()}"`);
-            } else {
-              console.log("No update needed for PR title.");
-            }
-
