@@ -18,9 +18,6 @@ jobs:
                "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments"
 
 
-
-#--------
-
 # name: PR Commenter
 
 # on:
