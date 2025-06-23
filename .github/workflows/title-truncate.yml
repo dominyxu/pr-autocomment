@@ -43,7 +43,7 @@ jobs:
             // 4. PR title is not already the full commit message
             if (
               commitMsgFirstLine.length > 70 &&
-              prTitle.trim().endsWith("...") &&
+              prTitle.trim().endsWith("...")
             ) {
               // Avoid endless loop: only update if PR title is not already the full commit message
               await github.rest.pulls.update({
