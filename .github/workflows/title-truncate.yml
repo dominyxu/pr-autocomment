@@ -44,8 +44,6 @@ jobs:
             if (
               commitMsgFirstLine.length > 70 &&
               prTitle.trim().endsWith("...") &&
-              prTitle.trim().startsWith(commitMsgFirst70) &&
-              prTitle.trim() !== commitMsgFirstLine.trim()
             ) {
               // Avoid endless loop: only update if PR title is not already the full commit message
               await github.rest.pulls.update({
