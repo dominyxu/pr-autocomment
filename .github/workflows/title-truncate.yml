@@ -19,9 +19,10 @@ jobs:
           echo "$MESSAGE" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Update PR title
+      - name: Update PR title using PAT
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.PAT1 }}
           script: |
             const fullMessage = `${{ steps.commit.outputs.message }}`.trim();
             github.rest.pulls.update({
@@ -30,3 +31,4 @@ jobs:
               pull_number: context.payload.pull_request.number,
               title: fullMessage
             });
+
