@@ -22,7 +22,7 @@ jobs:
       - name: Update PR title using PAT
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.PAT1 }}
+          github-token: ${{ secrets.PAT }}
           script: |
             const fullMessage = `${{ steps.commit.outputs.message }}`.trim();
             github.rest.pulls.update({
