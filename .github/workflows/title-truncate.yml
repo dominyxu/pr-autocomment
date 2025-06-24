@@ -16,7 +16,7 @@ jobs:
       - name: Update PR title from commit message
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.PR_WRITE_TOKEN }}  # Or use GITHUB_TOKEN if you’re not using forks
+          github-token: ${{ secrets.PAT }}  # Or use GITHUB_TOKEN if you’re not using forks
           script: |
             const prNumber = context.payload.pull_request.number;
 
