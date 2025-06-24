@@ -1,36 +1,47 @@
-name: Update PR Title with Full Commit Message
+name: Update PR Title from Full Commit Message
 
 on:
   pull_request:
     types: [opened]
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   update-pr-title:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Get full commit message
-        id: commit
-        run: |
-          MESSAGE=$(git log -1 --pretty=%B)
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$MESSAGE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Get full commit message from PR commits
-        id: commit
+      - name: Update PR title from commit message
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.PR_WRITE_TOKEN }}  # Or use GITHUB_TOKEN if you’re not using forks
           script: |
             const prNumber = context.payload.pull_request.number;
-            const commits = await github.rest.pulls.listCommits({
+
+            // Fetch all commits in the PR
+            const { data: commits } = await github.rest.pulls.listCommits({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: prNumber
+              pull_number: prNumber,
             });
 
-            // Assume only 1 commit in PR — adjust as needed
-            const fullMessage = commits.data[0].commit.message;
-            core.setOutput("message", fullMessage);
+            if (commits.length !== 1) {
+              console.log(`PR #${prNumber} has ${commits.length} commits. Skipping title update.`);
+              return;
+            }
+
+            // Get the full commit message of the single commit
+            const commitMessage = commits[0].commit.message;
+            const firstLine = commitMessage.split('\n')[0];
+
+            console.log(`Updating PR #${prNumber} title to: ${firstLine}`);
+
+            // Update PR title
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              title: firstLine
+            });
