@@ -19,16 +19,18 @@ jobs:
           echo "$MESSAGE" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Update PR title using PAT
+      - name: Get full commit message from PR commits
+        id: commit
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.PAT }}
           script: |
-            const fullMessage = `${{ steps.commit.outputs.message }}`.trim();
-            github.rest.pulls.update({
+            const prNumber = context.payload.pull_request.number;
+            const commits = await github.rest.pulls.listCommits({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              title: fullMessage
+              pull_number: prNumber
             });
 
+            // Assume only 1 commit in PR — adjust as needed
+            const fullMessage = commits.data[0].commit.message;
+            core.setOutput("message", fullMessage);
